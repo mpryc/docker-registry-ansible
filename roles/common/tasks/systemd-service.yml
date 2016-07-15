@@ -1,0 +1,16 @@
+---
+- name: Install {{ service_name }} service
+  sudo: True
+  template: >
+    src={{ service_name }}-service.j2
+    dest=/etc/systemd/system/{{ service_name }}.service
+  register: installed_service
+
+- name: Reload systemctl after provisioning {{ service_name }} service
+  sudo: True
+  command: systemctl daemon-reload
+  when: installed_service.changed == True
+
+- name: Start {{ service_name }} service
+  sudo: True
+  service: name={{ service_name }} state=started enabled=yes

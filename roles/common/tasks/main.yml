@@ -1,0 +1,6 @@
+---
+# Order is important. We need to start service after certificate is installed.
+# Could use notifiy action, but it's simpler to keep the order.
+  - include: packages.yml
+  - include: certificates.yml
+  - include: systemd-service.yml

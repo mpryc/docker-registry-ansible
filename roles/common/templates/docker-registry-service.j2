@@ -1,0 +1,25 @@
+[Unit]
+Description=Docker registry
+Documentation=man:docker(1)
+Requires=network.target
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+TimeoutStartSec=0
+Restart=no
+EnvironmentFile=-/etc/sysconfig/docker-registry
+
+ExecStartPre=-/usr/bin/docker stop registry
+ExecStartPre=-/usr/bin/docker rm registry
+ExecStartPre=/usr/bin/docker pull registry
+ExecStart=/usr/bin/docker run -d -p 5000:5000 --name registry -v /etc/docker/certs.d/{{ docker_registry_hostname }}:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/{{ docker_registry_hostname }}.crt -e REGISTRY_HTTP_TLS_KEY=/certs/{{ docker_registry_hostname }}.key registry:2
+
+ExecStop=-/usr/bin/docker stop registry
+ExecStopPost=-/usr/bin/docker rm registry
+
+[Install]
+WantedBy=multi-user.target
+

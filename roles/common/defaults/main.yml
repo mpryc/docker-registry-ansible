@@ -1,0 +1,5 @@
+---
+# Defaults file for the ansible-docker-registry
+
+docker_registry_hostname: "{{ ansible_fqdn }}"
+docker_registry_ipv4: "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"

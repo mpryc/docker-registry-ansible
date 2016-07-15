@@ -1,0 +1,27 @@
+---
+- stat: path={{ docker_registry_hostname }}.crt
+  register: local_certificate
+
+- name: Create Certificate - {{ docker_registry_hostname }}.key
+  sudo: False
+  local_action: shell /usr/bin/openssl genrsa -out {{ docker_registry_hostname }}.key 4096
+
+- name: Create Certificate - {{ docker_registry_hostname }}.cert
+  sudo: False
+  local_action: shell /usr/bin/openssl req -new -x509 -text -subj "/C=/ST=/L=/O=/CN={{ docker_registry_hostname }}/subjectAltName=IP:{{ docker_registry_ipv4 }}" -key {{ docker_registry_hostname }}.key -out {{ docker_registry_hostname }}.crt
+  when: local_certificate.stat.exists == False
+
+- name: Create directory for docker-registry certificate
+  sudo: True
+  file: path=/etc/docker/certs.d/{{ docker_registry_hostname }} state=directory
+
+- name: Copy Certifices to docker-registry
+  sudo: True
+  copy: src={{ item }} dest=/etc/docker/certs.d/{{ docker_registry_hostname }}/
+  with_items:
+    - "{{ docker_registry_hostname }}.key"
+    - "{{ docker_registry_hostname }}.crt"
+
+- name: Update Certificate Authority (CA) after installing new certificates
+  sudo: True
+  shell: /usr/bin/update-ca-trust
